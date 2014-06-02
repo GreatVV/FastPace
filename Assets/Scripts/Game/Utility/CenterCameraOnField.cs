@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Assets.Scripts.Game;
 using UnityEngine;
 
 #endregion
@@ -20,7 +21,7 @@ using UnityEngine;
 
         #region Event Handlers
     
-        public void CenterCameraOnChuzzles(IEnumerable<Tile> targetChuzzles, bool instantly)
+        public void CenterCameraOnChuzzles(IEnumerable<Cell> targetChuzzles, bool instantly)
         {
             var minX = targetChuzzles.Min(x => x.transform.position.x);
             var minY = targetChuzzles.Min(x => x.transform.position.y);
@@ -150,13 +151,13 @@ using UnityEngine;
             }
         }
 
-        
+        /*
         void Update()
         {
             if (previousNormalizedSize != normalizedSize)
             {
-                Instance.CenterCameraOnChuzzles(TileFactory.Tiles, false);
+                Instance.CenterCameraOnChuzzles(Tiles, false);
                 previousNormalizedSize = normalizedSize;
             }
-        }
+        }*/
     }

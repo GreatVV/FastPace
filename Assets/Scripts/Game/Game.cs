@@ -4,12 +4,7 @@ using UnityEngine;
 public class Game : MonoBehaviour
 {
     public Round CurrentRound;
-    public int MaxHeight = 10;
-    public int MaxWidth = 10;
-
     public int RoundNumber = 0;
-    public int StartHeight = 3;
-    public int StartWidth = 3;
 
     public void Start()
     {
@@ -19,13 +14,30 @@ public class Game : MonoBehaviour
 
     private void StartGame(int roundNumber)
     {
-        Round round = RoundFactory.GetRound(roundNumber);
-        TileFactory.CreateTileForRound(round);
+        Round round;
+        if (roundNumber == 0)
+        {
+            if (CurrentRound != null)
+            {
+                CurrentRound.DestroyAll();
+            }
+            
+        }
+
+        if (roundNumber == 0)
+        {
+            round = RoundFactory.FirstRound();
+        }
+        else
+        {
+            round = RoundFactory.GetRound(CurrentRound);
+        }
+
+        
         round.Finish += OnRoundFinish;
         InvokeStarted();
         CurrentRound = round;
         InvokeNewRound();
-        
     }
 
     private void OnRoundFinish(Round round)
@@ -39,6 +51,7 @@ public class Game : MonoBehaviour
         }
         else
         {
+            RoundNumber = 0;
             InvokeLose();
         }
     }

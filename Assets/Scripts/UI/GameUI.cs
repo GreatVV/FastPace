@@ -25,7 +25,7 @@ public class GameUI : MonoBehaviour
     private void OnNewRound(Round round)
     {
         roundNumber.text = round.Number.ToString(CultureInfo.InvariantCulture);
-        targetSprite.sprite2D = targetSprites[round.TargetColor];
+        targetSprite.sprite2D = targetSprites[round.TargetType];
     }
 
     private void OnStarted()

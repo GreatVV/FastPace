@@ -1,11 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
+using Assets.Scripts.Game;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 internal class RoundFactory : MonoBehaviour
 {
-    public int MinNumberOfColors = 2;
     public int MaxNumberOfColors = 8;
+    public int MinNumberOfColors = 2;
+
+    public static RoundFactory Instance { get; private set; }
 
     public void Awake()
     {
@@ -18,39 +22,56 @@ internal class RoundFactory : MonoBehaviour
         Instance = this;
     }
 
-    public static RoundFactory Instance { get; private set; }
-
-    public static Round GetRound(int roundNumber)
+    public static Round GetRound(Round round)
     {
         if (Instance)
         {
-            return Instance.CreateRound(roundNumber);
+            return Instance.UpgradeRound(round);
         }
         throw new NullReferenceException("Not inited RoundFactory.Instance");
     }
 
-    private Round CreateRound(int roundNumber)
+    private Round UpgradeRound(Round round)
     {
-        var minWidth = 3;
-        var minHeight = 3;
-        var maxWidth = 10;
-        var maxHeight = 10;
-
-        int width =  Mathf.Clamp(minWidth + roundNumber, minWidth, maxWidth);
-        int height = Mathf.Clamp(minHeight + roundNumber, minHeight, maxHeight);
-        var round = Round.Create(width, height);
-        round.Number = roundNumber;
-        var colors = Mathf.Clamp(MinNumberOfColors + roundNumber, 1,MaxNumberOfColors);
-
-        for (int i = 0; i < round.Width; i++)
+        round.Number++;
+        int colors = Mathf.Clamp(MinNumberOfColors + round.Number, 1, MaxNumberOfColors);
+        var newCells = new List<Cell>();
+        foreach (Cell cell in round.Cells)
         {
-            for (int j = 0; j < round.Height; j++)
+            foreach (Pair neighbour in cell.Neighbours)
             {
-                round.Field[i, j] = Random.Range(0, colors);
+                if (neighbour.Neigbour == null)
+                {
+                    Vector3 newPos = cell.transform.position + neighbour.OffsetRelativeCenter;
+                    var cast = Physics2D.OverlapPoint(newPos);
+                    if (!cast)
+                    {
+                        Cell newCell = CellFactory.GetRandomCell(colors,
+                            newPos);
+                        neighbour.Neigbour = newCell;
+                        newCell.Clicked += round.OnClick;
+                        newCells.Add(newCell);
+                        break;
+                    }
+                    neighbour.Neigbour = cast.transform.GetComponent<Cell>();
+                }
             }
         }
 
-        round.TargetColor = round.Field[Random.Range(0, round.Width), Random.Range(0, round.Height)];
+        round.Cells.AddRange(newCells);
+
+        round.TargetType = newCells.ToArray()[Random.Range(0, newCells.Count)].Type;
+        CenterCameraOnField.Instance.CenterCameraOnChuzzles(round.Cells, true);
+        return round;
+    }
+
+    public static Round FirstRound()
+    {
+        var round = new Round();
+        Cell randomCell = CellFactory.GetRandomCell(10, Vector3.zero);
+        randomCell.Clicked += round.OnClick;
+        round.TargetType = randomCell.Type;
+        round.Cells.Add(randomCell);
         return round;
     }
 }

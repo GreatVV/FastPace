@@ -1,50 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
+using Assets.Scripts.Game;
+using Object = UnityEngine.Object;
 
 [Serializable]
 public class Round
 {
-    public int Width;
-    public int Height;
+    public List<Cell> Cells = new List<Cell>();
 
-    public int[,] Field;
     public int Number;
 
-    public class Cell
-    {
-        public int X;
-        public int Y;
-        public int Type;
-    }
-
+    public int TargetType;
     public bool Win { get; set; }
-    public int TargetColor;
 
-    public static Round Create(int width, int height, List<Cell> cells = null)
+    public void OnClick(Cell cell)
     {
-        var round = new Round()
-        {
-            Width = width,
-            Height = height,
-            Field = new int[width, height]
-        };
-
-        if (cells != null)
-            foreach (var cell in cells)
-            {
-                if (cell.X >= 0 && cell.X < width && cell.Y >= 0 && cell.Y < height)
-                {
-                    round.Field[cell.X, cell.Y] = cell.Type;
-                }
-            }
-
-        return round;
-    }
-
-    public void OnClick(Tile tile)
-    {
-        Win = Field[tile.X, tile.Y] == TargetColor;
+        Win = cell.Type == TargetType;
         InvokeFinish();
     }
 
@@ -54,5 +25,13 @@ public class Round
     {
         Action<Round> handler = Finish;
         if (handler != null) handler(this);
+    }
+
+    public void DestroyAll()
+    {
+        foreach (Cell cell in Cells)
+        {
+            Object.Destroy(cell);
+        }
     }
 }
